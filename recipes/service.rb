@@ -89,9 +89,6 @@ when "systemd"
     subscribes :run, "template[#{src_fn}]"
     action :nothing
   end
-  systemd_uinit 'kafka.service' do
-    action [:create, :enable]
-  end
   template "#{src_fn}" do
     source "kafka.initd.erb"
     variables vars
