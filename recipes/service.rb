@@ -35,7 +35,8 @@ template "/etc/default/kafka" do
     :kafka_jvm_performance_opts => node["apache_kafka"]["kafka_jvm_performance_opts"],
     :kafka_opts => node["apache_kafka"]["kafka_opts"],
     :jmx_port => node["apache_kafka"]["jmx"]["port"],
-    :jmx_opts => node["apache_kafka"]["jmx"]["opts"]
+    :jmx_opts => node["apache_kafka"]["jmx"]["opts"],
+    :kafka_log_dir => node["apache_kafka"]["log_dir"],
   )
   notifies :restart, "service[kafka]", :delayed
 end
@@ -78,6 +79,19 @@ when "runit"
   runit_service "kafka" do
     default_logger true
     action [:enable, :start]
+  end
+when "systemd"
+  src_fn = '/etc/systemd/system/kafka.conf'
+  systemd_uinit 'kafka.service' do
+    action [:create, :enable]
+  end
+  template "#{src_fn}" do
+    source "kafka.initd.erb"
+    owner "root"
+    group "root"
+    action :create
+    mode "0744"
+    notifies :reload, "systemd_unit[kafka.service]", :delayed
   end
 else
   Chef::Log.error("You specified an invalid service style for Kafka, but I am continuing.")

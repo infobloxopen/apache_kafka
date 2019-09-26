@@ -1,0 +1,10 @@
+[Unit]
+Description=Kafka service
+
+[Service]
+Restart=always
+WorkingDirectory=<%= @kafka_home %>
+ExecStart=bash -c "source /etc/default/kafka ; '<%= @kafka_bin %>/kafka-server-start.sh' '<%= @kafka_config %>/server.properties'"
+
+[Install]
+WantedBy=multi-user.target
