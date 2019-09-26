@@ -96,11 +96,6 @@ when "runit"
   end
 when "systemd"
   src_fn = '/lib/systemd/system/kafka.service'
-  execute 'systemctl-daemon-reload' do
-    command '/bin/systemctl --system daemon-reload'
-    subscribes :run, "template[#{src_fn}]"
-    action :nothing
-  end
   template "#{src_fn}" do
     source "kafka_service.erb"
     variables vars
@@ -108,6 +103,11 @@ when "systemd"
     group "root"
     mode "0755"
     notifies :restart, "service[kafka]", :delayed
+  end
+  execute 'systemctl-daemon-reload' do
+    command '/bin/systemctl --system daemon-reload'
+    subscribes :run, "template[#{src_fn}]"
+    action :nothing
   end
   service 'kafka' do
     supports :status => true, :restart => true
