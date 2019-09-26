@@ -90,7 +90,7 @@ when "systemd"
     action :nothing
   end
   template "#{src_fn}" do
-    source "kafka.initd.erb"
+    source "kafka_service.erb"
     variables vars
     owner "root"
     group "root"
