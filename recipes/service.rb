@@ -95,7 +95,7 @@ when "systemd"
     owner "root"
     group "root"
     mode "0755"
-    notifies :restart, "service[kafka.service]", :delayed
+    notifies :restart, "service[kafka]", :delayed
   end
   service 'kafka' do
     supports :status => true, :restart => true
