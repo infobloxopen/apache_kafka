@@ -99,7 +99,7 @@ when "systemd"
   end
   service 'kafka' do
     supports :status => true, :restart => true
-    action [:enable, :start]
+    action [:enable]
   end
 else
   Chef::Log.error("You specified an invalid service style for Kafka, but I am continuing.")
