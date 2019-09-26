@@ -20,12 +20,7 @@
 
 version_tag = "kafka_#{node['apache_kafka']['scala_version']}-#{node['apache_kafka']['version']}"
 
-template "/etc/default/kafka" do
-  source "kafka_env.erb"
-  owner "kafka"
-  action :create
-  mode "0644"
-  variables(
+vars = {
     :kafka_home => ::File.join(node["apache_kafka"]["install_dir"], version_tag),
     :kafka_config => node["apache_kafka"]["config_dir"],
     :kafka_bin => node["apache_kafka"]["bin_dir"],
@@ -37,7 +32,14 @@ template "/etc/default/kafka" do
     :jmx_port => node["apache_kafka"]["jmx"]["port"],
     :jmx_opts => node["apache_kafka"]["jmx"]["opts"],
     :kafka_log_dir => node["apache_kafka"]["log_dir"],
-  )
+}
+
+template "/etc/default/kafka" do
+  source "kafka_env.erb"
+  owner "kafka"
+  action :create
+  mode "0644"
+  variables vars
   notifies :restart, "service[kafka]", :delayed
 end
 
@@ -81,17 +83,26 @@ when "runit"
     action [:enable, :start]
   end
 when "systemd"
-  src_fn = '/etc/systemd/system/kafka.conf'
+  src_fn = '/lib/systemd/system/kafka.service'
+  execute 'systemctl-daemon-reload' do
+    command '/bin/systemctl --system daemon-reload'
+    subscribes :run, "template[#{src_fn}]"
+    action :nothing
+  end
   systemd_uinit 'kafka.service' do
     action [:create, :enable]
   end
   template "#{src_fn}" do
     source "kafka.initd.erb"
+    variables vars
     owner "root"
     group "root"
-    action :create
-    mode "0744"
-    notifies :reload, "systemd_unit[kafka.service]", :delayed
+    mode "0755"
+    notifies :restart, "service[kafka.service]", :delayed
+  end
+  service 'kafka' do
+    supports :status => true, :restart => true
+    action [:enable, :start]
   end
 else
   Chef::Log.error("You specified an invalid service style for Kafka, but I am continuing.")
