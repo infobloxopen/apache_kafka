@@ -43,6 +43,18 @@ template "/etc/default/kafka" do
   notifies :restart, "service[kafka]", :delayed
 end
 
+%w{kafka-server-service.sh}.each do |bin|
+  template ::File.join(node["apache_kafka"]["bin_dir"], bin) do
+    source "bin/#{bin}.erb"
+    owner "kafka"
+    action :create
+    mode "0755"
+    variables vars
+    notifies :restart, "service[kafka]", :delayed
+  end
+end
+
+
 case node["apache_kafka"]["service_style"]
 when "upstart"
   template "/etc/init/kafka.conf" do
