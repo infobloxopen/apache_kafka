@@ -8,10 +8,12 @@
   node["apache_kafka"]["bin_dir"],
   node["apache_kafka"]["data_dir"],
   node["apache_kafka"]["log_dir"]
-].each do |dir|
-  directory dir do
-    recursive true
-    owner node["apache_kafka"]["user"]
+].each do |dirs|
+  dirs.split(',').each do |dir|
+    directory dir do
+      recursive true
+      owner node["apache_kafka"]["user"]
+    end
   end
 end
 
