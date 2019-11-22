@@ -4,7 +4,7 @@ Description=Kafka service
 [Service]
 Restart=always
 ExecStart=<%= @kafka_bin %>/kafka-server-service.sh
-LimitNOFILE=<%= kafka_nfiles %>
+LimitNOFILE=<%= @kafka_nfiles %>
 
 [Install]
 WantedBy=multi-user.target
