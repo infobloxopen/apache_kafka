@@ -32,6 +32,7 @@ vars = {
     :jmx_port => node["apache_kafka"]["jmx"]["port"],
     :jmx_opts => node["apache_kafka"]["jmx"]["opts"],
     :kafka_log_dir => node["apache_kafka"]["log_dir"],
+    :kafka_nfiles => node["apache_kafka"]["nfiles"],
 }
 
 template "/etc/default/kafka" do

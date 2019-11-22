@@ -41,6 +41,7 @@ default["apache_kafka"]["umask"] = 007
 default["apache_kafka"]["broker.id"] = nil
 default["apache_kafka"]["port"] = 9092
 default["apache_kafka"]["zookeeper.connect"] = nil
+default["apache_kafka"]["nfiles"] = 100000
 
 # Check in /var/log/kafka/server.log for invalid entries
 #
