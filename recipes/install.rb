@@ -33,3 +33,10 @@ execute "unzip kafka source" do
   command "tar -zxvf #{download_path} -C #{node['apache_kafka']['install_dir']}"
   not_if { ::File.exist?(::File.join(node["apache_kafka"]["install_dir"], version_tag)) }
 end
+
+link ::File.join(node['apache_kafka']['install_dir'], "current") do
+  to ::File.join(node['apache_kafka']['install_dir'], version_tag)
+  link_type :symbolic
+  owner 'root'
+  group 'root'
+end

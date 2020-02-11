@@ -1,0 +1,11 @@
+#!/bin/bash
+
+cd "<%= @kafka_home %>"
+echo "See the limis:"
+echo "------------------------------"
+ulimit -a
+echo "------------------------------"
+
+source /etc/default/kafka 
+
+exec '<%= @kafka_bin %>/kafka-server-start.sh' '<%= @kafka_config %>/server.properties'

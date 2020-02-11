@@ -1,0 +1,11 @@
+[Unit]
+Description=Kafka service
+
+[Service]
+EnvironmentFile=/etc/default/kafka
+Restart=always
+ExecStart=<%= @kafka_bin %>/kafka-server-service.sh
+LimitNOFILE=<%= @kafka_nfiles %>
+
+[Install]
+WantedBy=multi-user.target

@@ -20,12 +20,7 @@
 
 version_tag = "kafka_#{node['apache_kafka']['scala_version']}-#{node['apache_kafka']['version']}"
 
-template "/etc/default/kafka" do
-  source "kafka_env.erb"
-  owner "kafka"
-  action :create
-  mode "0644"
-  variables(
+vars = {
     :kafka_home => ::File.join(node["apache_kafka"]["install_dir"], version_tag),
     :kafka_config => node["apache_kafka"]["config_dir"],
     :kafka_bin => node["apache_kafka"]["bin_dir"],
@@ -35,10 +30,31 @@ template "/etc/default/kafka" do
     :kafka_jvm_performance_opts => node["apache_kafka"]["kafka_jvm_performance_opts"],
     :kafka_opts => node["apache_kafka"]["kafka_opts"],
     :jmx_port => node["apache_kafka"]["jmx"]["port"],
-    :jmx_opts => node["apache_kafka"]["jmx"]["opts"]
-  )
+    :jmx_opts => node["apache_kafka"]["jmx"]["opts"],
+    :kafka_log_dir => node["apache_kafka"]["log_dir"],
+    :kafka_nfiles => node["apache_kafka"]["nfiles"],
+}
+
+template "/etc/default/kafka" do
+  source "kafka_env.erb"
+  owner "kafka"
+  action :create
+  mode "0644"
+  variables vars
   notifies :restart, "service[kafka]", :delayed
 end
+
+%w{kafka-server-service.sh}.each do |bin|
+  template ::File.join(node["apache_kafka"]["bin_dir"], bin) do
+    source "bin/#{bin}.erb"
+    owner "kafka"
+    action :create
+    mode "0755"
+    variables vars
+    notifies :restart, "service[kafka]", :delayed
+  end
+end
+
 
 case node["apache_kafka"]["service_style"]
 when "upstart"
@@ -77,6 +93,25 @@ when "runit"
 
   runit_service "kafka" do
     default_logger true
+    action [:enable, :start]
+  end
+when "systemd"
+  src_fn = '/lib/systemd/system/kafka.service'
+  template "#{src_fn}" do
+    source "kafka_service.erb"
+    variables vars
+    owner "root"
+    group "root"
+    mode "0755"
+    notifies :restart, "service[kafka]", :delayed
+  end
+  execute 'systemctl-daemon-reload' do
+    command '/bin/systemctl --system daemon-reload'
+    subscribes :run, "template[#{src_fn}]"
+    action :nothing
+  end
+  service 'kafka' do
+    supports :status => true, :restart => true
     action [:enable, :start]
   end
 else
